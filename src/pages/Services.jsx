@@ -4,7 +4,6 @@ import {
   Car, 
   Phone, 
   User, 
-  Mail, 
   MessageSquare, 
   Camera, 
   Upload, 
@@ -22,7 +21,7 @@ const Services = () => {
       if (element) {
         setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth' });
-        }, 100); // Small delay ensures render is complete
+        }, 100);
       }
     }
   }, [hash]);
@@ -43,12 +42,24 @@ const Services = () => {
     
     const formData = new FormData(e.target);
     
+    // CRITICAL: Overwrite the default file input with our state files
+    // This ensures that if a user deleted a file from the UI, it doesn't get sent.
+    formData.delete('photos');
+    selectedFiles.forEach((file) => {
+      formData.append('photos', file);
+    });
+    
     fetch("/", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(formData).toString(),
+      // NOTE: Do NOT set Content-Type header when sending FormData. 
+      // The browser automatically sets it to multipart/form-data with the correct boundary.
+      body: formData,
     })
-      .then(() => alert("Estimate request sent! We will contact you shortly."))
+      .then(() => {
+        alert("Estimate request sent! We will contact you shortly.");
+        e.target.reset();
+        setSelectedFiles([]);
+      })
       .catch((error) => alert(error));
   };
   
@@ -84,21 +95,8 @@ const Services = () => {
       description: "Windshield and window replacement.",
     }
   ];
+
   return (
-  <form 
-    name="estimate" 
-    method="POST" 
-    onSubmit={handleSubmit}
-    className="space-y-6"
-  >
-    {/* CRITICAL: This hidden input links React to Netlify */}
-    <input type="hidden" name="form-name" value="estimate" />
-    
-    {/* Your existing inputs... just ensure they have name attributes */}
-    <div>
-      <label className="block text-gray-700 font-bold mb-2">Full Name</label>
-      <input type="text" name="name" required className="..." />
-    </div>
     <div className="bg-gray-50 min-h-screen pb-12">
       {/* Header */}
       <div className="bg-navy-900 text-white py-16">
@@ -170,7 +168,15 @@ const Services = () => {
           {/* Right Column: The Form */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-lg p-8">
-              <form onSubmit={handleSubmit} className="space-y-8">
+              
+              {/* FORM STARTS HERE */}
+              <form 
+                name="estimate" 
+                method="POST" 
+                onSubmit={handleSubmit}
+                className="space-y-8"
+              >
+                <input type="hidden" name="form-name" value="estimate" />
                 
                 {/* Contact Info */}
                 <div>
@@ -181,16 +187,16 @@ const Services = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                      <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      <input type="text" name="name" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                      <input type="tel" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      <input type="tel" name="phone" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                    <input type="email" name="email" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                   </div>
                 </div>
 
@@ -203,15 +209,15 @@ const Services = () => {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Year *</label>
-                      <input type="text" placeholder="2020" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      <input type="text" name="year" placeholder="2020" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Make *</label>
-                      <input type="text" placeholder="Toyota" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      <input type="text" name="make" placeholder="Toyota" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Model *</label>
-                      <input type="text" placeholder="Camry" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      <input type="text" name="model" placeholder="Camry" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
                     </div>
                   </div>
                 </div>
@@ -223,6 +229,7 @@ const Services = () => {
                     <h3 className="text-xl font-bold">Damage Description</h3>
                   </div>
                   <textarea 
+                    name="message"
                     rows="4" 
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none"
                     placeholder="Please describe the damage (location, severity, how it happened)..."
@@ -239,6 +246,7 @@ const Services = () => {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors relative">
                     <input 
                       type="file" 
+                      name="photos"
                       multiple 
                       accept="image/*"
                       onChange={handleFileChange}
@@ -281,6 +289,5 @@ const Services = () => {
     </div>
   );
 };
-
 
 export default Services;
