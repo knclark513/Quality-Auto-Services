@@ -12,9 +12,16 @@
       <input type="text" name="name" />
       <input type="email" name="email" />
       <input type="tel" name="phone" />
-      <input type="text" name="vehicle" />
+      
+      <!-- CHANGED: Split vehicle into 3 fields to match React -->
+      <input type="text" name="year" />
+      <input type="text" name="make" />
+      <input type="text" name="model" />
+      
       <textarea name="message"></textarea>
-      <input type="file" name="photos" />
+      
+      <!-- CHANGED: Added 'multiple' attribute -->
+      <input type="file" name="photos" multiple />
     </form>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
