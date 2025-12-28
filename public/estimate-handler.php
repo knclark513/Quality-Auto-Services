@@ -2,7 +2,7 @@
 // public/estimate-handler.php
 
 // REPLACE THIS WITH YOUR EMAIL ADDRESS
-$to = "Karl.Clark@BigIntelligenceAI.comM"; 
+$to = "Karl.Clark@BigIntelligenceAI.com"; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
