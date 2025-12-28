@@ -7,11 +7,13 @@ import {
   MessageSquare, 
   Camera, 
   Upload, 
-  X 
+  X,
+  CheckCircle // Added for the success message
 } from 'lucide-react';
 
 const Services = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [submitted, setSubmitted] = useState(false); // New state for success message
   const { hash } = useLocation();
 
   // Scroll to the estimate section if the URL has #estimate
@@ -43,7 +45,6 @@ const Services = () => {
     const formData = new FormData(e.target);
     
     // CRITICAL: Overwrite the default file input with our state files
-    // This ensures that if a user deleted a file from the UI, it doesn't get sent.
     formData.delete('photos');
     selectedFiles.forEach((file) => {
       formData.append('photos', file);
@@ -51,16 +52,25 @@ const Services = () => {
     
     fetch("/", {
       method: "POST",
-      // NOTE: Do NOT set Content-Type header when sending FormData. 
-      // The browser automatically sets it to multipart/form-data with the correct boundary.
       body: formData,
     })
       .then(() => {
-        alert("Estimate request sent! We will contact you shortly.");
-        e.target.reset();
+        // On success, switch to the success view and clear files
+        setSubmitted(true);
         setSelectedFiles([]);
+        
+        // Scroll to the top of the estimate section so they see the message
+        const element = document.getElementById('estimate');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
       })
       .catch((error) => alert(error));
+  };
+
+  // Function to reset the form if they want to send another
+  const handleReset = () => {
+    setSubmitted(false);
   };
   
   const services = [
@@ -165,123 +175,142 @@ const Services = () => {
             </div>
           </div>
 
-          {/* Right Column: The Form */}
+          {/* Right Column: The Form OR Success Message */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              
-              {/* FORM STARTS HERE */}
-              <form 
-                name="estimate" 
-                method="POST" 
-                onSubmit={handleSubmit}
-                className="space-y-8"
-              >
-                <input type="hidden" name="form-name" value="estimate" />
-                
-                {/* Contact Info */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4 text-navy-900">
-                    <User className="text-gold-500" size={20} />
-                    <h3 className="text-xl font-bold">Contact Information</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                      <input type="text" name="name" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                      <input type="tel" name="phone" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" name="email" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                  </div>
+            
+            {submitted ? (
+              // --- SUCCESS MESSAGE UI ---
+              <div className="bg-white rounded-xl shadow-lg p-12 text-center h-full flex flex-col items-center justify-center">
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle className="text-green-600 w-12 h-12" />
                 </div>
-
-                {/* Vehicle Info */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4 text-navy-900">
-                    <Car className="text-gold-500" size={20} />
-                    <h3 className="text-xl font-bold">Vehicle Information</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Year *</label>
-                      <input type="text" name="year" placeholder="2020" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Make *</label>
-                      <input type="text" name="make" placeholder="Toyota" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Model *</label>
-                      <input type="text" name="model" placeholder="Camry" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Damage Description */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4 text-navy-900">
-                    <MessageSquare className="text-gold-500" size={20} />
-                    <h3 className="text-xl font-bold">Damage Description</h3>
-                  </div>
-                  <textarea 
-                    name="message"
-                    rows="4" 
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none"
-                    placeholder="Please describe the damage (location, severity, how it happened)..."
-                  ></textarea>
-                </div>
-
-                {/* Photo Upload */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4 text-navy-900">
-                    <Camera className="text-gold-500" size={20} />
-                    <h3 className="text-xl font-bold">Upload Photos</h3>
-                  </div>
-                  
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors relative">
-                    <input 
-                      type="file" 
-                      name="photos"
-                      multiple 
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 font-medium">Click to upload photos</p>
-                    <p className="text-sm text-gray-400 mt-1">Take clear photos of all visible damage</p>
-                  </div>
-
-                  {/* File Preview List */}
-                  {selectedFiles.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                          <span className="text-sm text-gray-600 truncate">{file.name}</span>
-                          <button 
-                            type="button"
-                            onClick={() => removeFile(file.name)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <button type="submit" className="w-full bg-gold-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-gold-400 transition-colors text-lg shadow-md">
-                  Submit Estimate Request
+                <h3 className="text-3xl font-bold text-navy-900 mb-4">Request Received!</h3>
+                <p className="text-gray-600 mb-8 text-lg max-w-md">
+                  Thank you for contacting Quality Auto Services. We have received your estimate request and photos. Our team will review the damage and contact you shortly.
+                </p>
+                <button 
+                  onClick={handleReset}
+                  className="bg-gold-500 text-navy-900 font-bold py-3 px-8 rounded-lg hover:bg-gold-400 transition-colors shadow-md"
+                >
+                  Submit Another Request
                 </button>
+              </div>
+            ) : (
+              // --- ORIGINAL FORM ---
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <form 
+                  name="estimate" 
+                  method="POST" 
+                  onSubmit={handleSubmit}
+                  className="space-y-8"
+                >
+                  <input type="hidden" name="form-name" value="estimate" />
+                  
+                  {/* Contact Info */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 text-navy-900">
+                      <User className="text-gold-500" size={20} />
+                      <h3 className="text-xl font-bold">Contact Information</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" name="name" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                        <input type="tel" name="phone" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                      <input type="email" name="email" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                    </div>
+                  </div>
 
-              </form>
-            </div>
+                  {/* Vehicle Info */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 text-navy-900">
+                      <Car className="text-gold-500" size={20} />
+                      <h3 className="text-xl font-bold">Vehicle Information</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Year *</label>
+                        <input type="text" name="year" placeholder="2020" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Make *</label>
+                        <input type="text" name="make" placeholder="Toyota" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Model *</label>
+                        <input type="text" name="model" placeholder="Camry" required className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Damage Description */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 text-navy-900">
+                      <MessageSquare className="text-gold-500" size={20} />
+                      <h3 className="text-xl font-bold">Damage Description</h3>
+                    </div>
+                    <textarea 
+                      name="message"
+                      rows="4" 
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none"
+                      placeholder="Please describe the damage (location, severity, how it happened)..."
+                    ></textarea>
+                  </div>
+
+                  {/* Photo Upload */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 text-navy-900">
+                      <Camera className="text-gold-500" size={20} />
+                      <h3 className="text-xl font-bold">Upload Photos</h3>
+                    </div>
+                    
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors relative">
+                      <input 
+                        type="file" 
+                        name="photos"
+                        multiple 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-600 font-medium">Click to upload photos</p>
+                      <p className="text-sm text-gray-400 mt-1">Take clear photos of all visible damage</p>
+                    </div>
+
+                    {/* File Preview List */}
+                    {selectedFiles.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                            <span className="text-sm text-gray-600 truncate">{file.name}</span>
+                            <button 
+                              type="button"
+                              onClick={() => removeFile(file.name)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button type="submit" className="w-full bg-gold-500 text-navy-900 font-bold py-4 rounded-lg hover:bg-gold-400 transition-colors text-lg shadow-md">
+                    Submit Estimate Request
+                  </button>
+
+                </form>
+              </div>
+            )}
           </div>
 
         </div>
