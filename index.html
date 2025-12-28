@@ -7,6 +7,15 @@
     <title>quality-auto</title>
   </head>
   <body>
+    <!-- Submission Form for processing Collision Estimates -->
+    <form name="estimate" netlify netlify-honeypot="bot-field" hidden>
+      <input type="text" name="name" />
+      <input type="email" name="email" />
+      <input type="tel" name="phone" />
+      <input type="text" name="vehicle" />
+      <textarea name="message"></textarea>
+      <input type="file" name="photos" />
+    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
