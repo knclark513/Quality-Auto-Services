@@ -40,9 +40,18 @@ const Services = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("This is a demo! In the real app, these photos would be sent to the shop owner.");
+    
+    const formData = new FormData(e.target);
+    
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(formData).toString(),
+    })
+      .then(() => alert("Estimate request sent! We will contact you shortly."))
+      .catch((error) => alert(error));
   };
-
+  
   const services = [
     {
       id: 1,
@@ -75,8 +84,21 @@ const Services = () => {
       description: "Windshield and window replacement.",
     }
   ];
-
   return (
+  <form 
+    name="estimate" 
+    method="POST" 
+    onSubmit={handleSubmit}
+    className="space-y-6"
+  >
+    {/* CRITICAL: This hidden input links React to Netlify */}
+    <input type="hidden" name="form-name" value="estimate" />
+    
+    {/* Your existing inputs... just ensure they have name attributes */}
+    <div>
+      <label className="block text-gray-700 font-bold mb-2">Full Name</label>
+      <input type="text" name="name" required className="..." />
+    </div>
     <div className="bg-gray-50 min-h-screen pb-12">
       {/* Header */}
       <div className="bg-navy-900 text-white py-16">
@@ -259,5 +281,6 @@ const Services = () => {
     </div>
   );
 };
+
 
 export default Services;
