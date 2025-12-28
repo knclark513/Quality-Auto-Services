@@ -8,12 +8,12 @@ import {
   Camera, 
   Upload, 
   X,
-  CheckCircle // Added for the success message
+  CheckCircle 
 } from 'lucide-react';
 
 const Services = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [submitted, setSubmitted] = useState(false); // New state for success message
+  const [submitted, setSubmitted] = useState(false);
   const { hash } = useLocation();
 
   // Scroll to the estimate section if the URL has #estimate
@@ -44,31 +44,53 @@ const Services = () => {
     
     const formData = new FormData(e.target);
     
-    // CRITICAL: Overwrite the default file input with our state files
+    // Overwrite the default file input with our state files
     formData.delete('photos');
     selectedFiles.forEach((file) => {
-      formData.append('photos', file);
+      formData.append('photos[]', file); // Note: PHP prefers 'photos[]' for multiple files
     });
     
-    fetch("/", {
+    // ============================================================
+    // OPTION 1: HOSTINGER (PHP) - CURRENTLY ACTIVE
+    // ============================================================
+    fetch("/estimate-handler.php", {
       method: "POST",
       body: formData,
     })
-      .then(() => {
-        // On success, switch to the success view and clear files
-        setSubmitted(true);
-        setSelectedFiles([]);
-        
-        // Scroll to the top of the estimate section so they see the message
-        const element = document.getElementById('estimate');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+      .then((response) => {
+        if (response.ok) {
+          // Success Logic
+          setSubmitted(true);
+          setSelectedFiles([]);
+          const element = document.getElementById('estimate');
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          throw new Error("Server failed to send email");
         }
       })
+      .catch((error) => {
+        console.error(error);
+        alert("There was an error sending your request. Please try again.");
+      });
+
+    // ============================================================
+    // OPTION 2: NETLIFY - COMMENTED OUT FOR FUTURE USE
+    // ============================================================
+    /*
+    fetch("/", {
+      method: "POST",
+      body: formData, // Netlify handles the FormData automatically
+    })
+      .then(() => {
+        setSubmitted(true);
+        setSelectedFiles([]);
+        const element = document.getElementById('estimate');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      })
       .catch((error) => alert(error));
+    */
   };
 
-  // Function to reset the form if they want to send another
   const handleReset = () => {
     setSubmitted(false);
   };
@@ -204,7 +226,11 @@ const Services = () => {
                   onSubmit={handleSubmit}
                   className="space-y-8"
                 >
-                  <input type="hidden" name="form-name" value="estimate" />
+                  {/* 
+                      NETLIFY HIDDEN INPUT (Commented out for Hostinger)
+                      Uncomment this when moving back to Netlify
+                  */}
+                  {/* <input type="hidden" name="form-name" value="estimate" /> */}
                   
                   {/* Contact Info */}
                   <div>
