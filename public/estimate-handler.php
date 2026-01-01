@@ -2,7 +2,8 @@
 // public/estimate-handler.php
 
 // REPLACE THIS WITH YOUR EMAIL ADDRESS
-$to = "Karl.Clark@BigIntelligenceAI.com"; 
+$to = "Karl.Clark@BigIntelligenceAI.com, webasto96@gmail.com"; 
+$fromEmail = "Karl.Clark@BigIntelligenceAI.com";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -19,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 2. Prepare Email Headers & Boundary
     $boundary = md5(time());
-    $headers = "From: " . $to ."\r\n";
+    $headers = "From: " . $fromEmail ."\r\n";
     $headers .= "Reply-To: " . $email . "\r\n";
     $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
     $headers .= "MIME-Version: 1.0\r\n";
@@ -73,4 +74,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     http_response_code(403);
     echo "Forbidden";
 }
+
 ?>
