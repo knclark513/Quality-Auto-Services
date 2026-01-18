@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "year": 2016,
+    "make": "Chevrolet",
+    "model": "Malibu",
+    "trim": "Premier Sedan 4D",
+    "price": 9500,
+    "mileage": "97,457",
+    "image": "/images/malibu.jpg",
+    "status": "Available"
+  },
+  {
+    "id": 2,
+    "year": 2021,
+    "make": "Chevrolet",
+    "model": "Equinox",
+    "trim": "LS Sport Utility 4D",
+    "price": 11500,
+    "mileage": "63,481",
+    "image": "/images/equinox.jpg",
+    "status": "Available"
+  },
+  {
+    "id": 3,
+    "year": 2015,
+    "make": "Cadillac",
+    "model": "SRX",
+    "trim": "Luxury Collection",
+    "price": 10500,
+    "mileage": "102,000",
+    "image": "/images/cadillac.jpg",
+    "status": "Available"
+  }
+]
